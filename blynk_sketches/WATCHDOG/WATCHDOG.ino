@@ -39,6 +39,8 @@ v3 - PIR
 
 int lightPin = A0;
 int pirPin = 5;
+int connTimeout = 3000;
+int connRetries = 4;
 
 OneWire oneWire1(0); // пин подключения внутреннего датчика ds18b20
 OneWire oneWire2(4); // пин подключения внешнего датчика ds18b20
@@ -46,7 +48,6 @@ DallasTemperature innerTempSensor(&oneWire1);
 DallasTemperature outerTempSensor(&oneWire2);
 
 BlynkTimer sensorsTimer;
-BlynkTimer connTimer;
 
 void setup()
 {
@@ -54,7 +55,6 @@ void setup()
   Blynk.connectWiFi(WIFI_SSID, WIFI_PASS);
   
   sensorsTimer.setInterval(600L, readSensors);
-  connTimer.setInterval(10000L, checkConnection);
   
   pinMode(pirPin, INPUT);
   Serial.begin(9600);
@@ -82,17 +82,20 @@ void readSensors() {
   Blynk.virtualWrite(V3, pirValue);
 }
 
-void checkConnection() {
-  bool conn = Blynk.connected();
-  int timeout = 3000;
-
-  if (!conn) {
-    Blynk.connect(timeout);
-  }
-}
-
 void loop() {
-  connTimer.run();
+  if (!Blynk.connected()) {
+    
+    // try to reconnect
+    for (int i = 0; i < connRetries; i++) {
+      if (Blynk.connect(connTimeout)) {
+        return;
+      }
+    }
+
+    // reboot controller, if cant reconnect
+    ESP.restart();
+  }
+
   sensorsTimer.run();
   
   Blynk.run();

@@ -33,10 +33,10 @@ int relayPin = 4; // pin connected to solid state relay
 int appButton = LOW;  // app button
 int snrButton = 13; // pin connected to sensor button
 int snrState = LOW;  // flag
-int value = 0;
+int connTimeout = 3000;
+int connRetries = 4;
 
 BlynkTimer buttonTimer;
-BlynkTimer connTimer;
 
 // synchronize variables between app and hardware
 BLYNK_CONNECTED() {
@@ -52,8 +52,7 @@ void setup(){
   Blynk.config(BLYNK_AUTH_TOKEN);
   Blynk.connectWiFi(WIFI_SSID, WIFI_PASS);
 
-  buttonTimer.setInterval(100L, handleButton);
-  connTimer.setInterval(10000L, checkConnection);
+  // buttonTimer.setInterval(100L, handleButton);
 
   pinMode(relayPin, OUTPUT);
   pinMode(snrButton, INPUT);
@@ -77,18 +76,26 @@ void handleButton(){
   snrState = HIGH;
 }
 
-void checkConnection() {
-  bool conn = Blynk.connected();
-  int timeout = 3000;
-
-  if (!conn) {
-    Blynk.connect(timeout);
-  }
-}
-
 void loop(){
-  connTimer.run();
-  buttonTimer.run();
+  // check connection first
+  if (!Blynk.connected()) {
+
+    // if button is on, then turn it off
+    if (appButton) {
+      digitalWrite(relayPin, !appButton);
+      Blynk.virtualWrite(V0, !appButton);
+    }
+
+    // try to reconnect
+    for (int i = 0; i < connRetries; i++) {
+      if (Blynk.connect(connTimeout)) {
+        return;
+      }
+    }
+
+    // reboot controller, if cant reconnect
+    ESP.restart();
+  }
 
   Blynk.run();
 }
