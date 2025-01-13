@@ -29,7 +29,7 @@
 #include <BlynkSimpleEsp8266.h>
 #include "creds.h"
 
-int relayPin = 5; // pin connected to solid state relay
+int relayPin = 4; // pin connected to solid state relay
 int appButton = LOW;  // app button
 int snrButton = 13; // pin connected to sensor button
 int snrState = LOW;  // flag

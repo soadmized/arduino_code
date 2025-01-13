@@ -3,8 +3,8 @@
 | Wemos IO | pin (IDE) |
  ----------------------
 | D0 (R/W) |   GPIO16  | 
-|    D1    |   GPIO5   | 
-|    D2    |   GPIO4   | solid state relay
+|    D1    |   GPIO5   | solid state relay
+|    D2    |   GPIO4   | 
 |    D3    |   GPIO0   | 
 |    D4    |   GPIO2   | 
 |    D5    |   GPIO14  | 
@@ -29,7 +29,7 @@
 #include <BlynkSimpleEsp8266.h>
 #include "creds.h"
 
-int relayPin = 4; // pin connected to solid state relay
+int relayPin = 5; // pin connected to solid state relay
 int appButton = LOW;  // app button
 int snrButton = 13; // pin connected to sensor button
 int snrState = LOW;  // flag
